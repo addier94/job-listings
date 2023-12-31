@@ -29,6 +29,8 @@ export const Header = () => {
           bg-primary
           hidden
           sm:block
+          bg-cover
+          bg-no-repeat
         "
         style={{ backgroundImage: "url(/images/bg-header-desktop.svg)" }}
       ></div>
