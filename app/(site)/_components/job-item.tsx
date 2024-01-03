@@ -4,8 +4,9 @@ import Image from "next/image";
 
 interface JobItemProps {
   job: TData;
+  setTagToParams: (lang: string) => void;
 }
-export const JobItem = ({ job }: JobItemProps) => {
+export const JobItem = ({ job, setTagToParams }: JobItemProps) => {
   return (
     <div
       className={`
@@ -45,6 +46,7 @@ export const JobItem = ({ job }: JobItemProps) => {
             height={0}
             alt={job.company}
             className="w-full"
+            priority
           />
         </figure>
         <div
@@ -106,6 +108,7 @@ export const JobItem = ({ job }: JobItemProps) => {
         {job.languages.map((language, id) => (
           <button
             key={id}
+            onClick={() => setTagToParams(language)}
             className="
               bg-neutralLightFilter
               text-primary

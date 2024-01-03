@@ -1,10 +1,34 @@
 import Image from "next/image";
+import qs from "query-string";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
-interface FilterProps {
-  text: string;
+interface FilteredLogsItemProps {
+  readonly text: string;
 }
 
-export const FilteredLogs = ({ text }: FilterProps) => {
+export const FilteredLogsItem = ({ text }: FilteredLogsItemProps) => {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+
+  const deleteTagFromParams = (tag: string): void => {
+    const queryParams = searchParams.getAll("category"); // get array of tags from url
+
+    const newTags = queryParams.filter((queryTag) => queryTag !== tag); // filter out the tag we want to delete
+
+    const url = qs.stringifyUrl(
+      {
+        url: pathname,
+        query: {
+          category: newTags,
+        },
+      },
+      { skipNull: true, skipEmptyString: true },
+    );
+
+    router.push(url);
+  };
+
   return (
     <div
       className="
@@ -25,6 +49,7 @@ export const FilteredLogs = ({ text }: FilterProps) => {
         {text}
       </span>
       <button
+        onClick={() => deleteTagFromParams(text)}
         className="
           bg-primary
           h-full

@@ -1,31 +1,52 @@
 import { TData } from "@/app/utils/typescript";
 import { JobItem } from "./job-item";
-import { useEffect, useState } from "react";
-import { FilteredLogs } from "@/app/components/filtered-logs";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import qs from "query-string";
+import { FilteredLogsItem } from "@/app/components/filtered-logs-item";
 
 interface JobListProps {
   data: TData[];
 }
-const getUniqueLanguage = (jobs: TData[]): string[] => {
-  const uniqueLanguagesSet = new Set<string>();
 
-  for (const job of jobs) {
-    for (const language of job.languages) {
-      uniqueLanguagesSet.add(language);
-    }
+const uniqueTags = (languages: string[], newLanguage: string): string[] => {
+  const uniqueTagsSet = new Set<string>();
+
+  for (const language of languages) {
+    uniqueTagsSet.add(language);
   }
 
-  const uniqueLanguages = Array.from(uniqueLanguagesSet);
-  return uniqueLanguages;
+  uniqueTagsSet.add(newLanguage);
+
+  const uniqueTags = Array.from(uniqueTagsSet);
+  return uniqueTags;
 };
 
 export const JobList = ({ data }: JobListProps) => {
-  const [tempFilter, setTempFilter] = useState<string[]>([]);
+  const pathname = usePathname();
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
-  useEffect(() => {
-    const languages = getUniqueLanguage(data);
-    setTempFilter(languages);
-  }, [data]);
+  const queryParams = searchParams.getAll("category"); // get array of tags from url
+
+  const setTagToParams = (newLanguage: string) => {
+    const newTags = uniqueTags(queryParams, newLanguage);
+
+    const url = qs.stringifyUrl(
+      {
+        url: pathname,
+        query: {
+          category: newTags,
+        },
+      },
+      { skipNull: true, skipEmptyString: true },
+    );
+
+    router.push(url);
+  };
+
+  const clearParams = () => {
+    router.push(pathname);
+  };
 
   return (
     <main
@@ -44,38 +65,42 @@ export const JobList = ({ data }: JobListProps) => {
           flex
           flex-col
           gap-10
+          sm:gap-4
         "
       >
-        <section
-          className="
-            p-6
-            bg-white
-            shadow-xl
-            rounded-md
-            -mt-20
-            z-10
-            relative
-            flex
-            justify-between
-            items-center
-            gap-4
-            "
-        >
-          <div
+        {queryParams.length > 0 && (
+          <section
             className="
-              flex
-              flex-wrap
-              gap-4
-            "
+                p-6
+                bg-white
+                shadow-xl
+                rounded-md
+                -mt-20
+                z-10
+                relative
+                flex
+                justify-between
+                items-center
+                gap-4
+                "
           >
-            {tempFilter.map((language) => (
-              <FilteredLogs key={language} text={language} />
-            ))}
-          </div>
-          <button>Clear</button>
-        </section>
+            <div
+              className="
+                  flex
+                  flex-wrap
+                  gap-4
+                "
+            >
+              {queryParams.map((language) => (
+                <FilteredLogsItem key={language} text={language} />
+              ))}
+            </div>
+            <button onClick={clearParams}>Clear</button>
+          </section>
+        )}
+
         {data.map((job) => (
-          <JobItem key={job.id} job={job} />
+          <JobItem key={job.id} job={job} setTagToParams={setTagToParams} />
         ))}
       </article>
     </main>

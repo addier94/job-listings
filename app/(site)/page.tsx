@@ -5,14 +5,37 @@ import { Header } from "../components/header";
 import { JobList } from "./_components/job-list";
 import { TData } from "../utils/typescript";
 
-export default function Home() {
+interface SearchPageProps {
+  searchParams: {
+    category: string | string[] | undefined;
+  };
+}
+
+export default function Home({ searchParams: { category } }: SearchPageProps) {
   const [data, setData] = useState<TData[] | null>(null);
 
   useEffect(() => {
-    fetch("/data.json")
-      .then((res) => res.json())
-      .then((data) => setData(data));
-  }, []);
+    const getData = async (): Promise<TData[]> => {
+      const data = await fetch("/data.json");
+      return await data.json();
+    };
+
+    getData().then((responseData) => {
+      if (!category) {
+        setData(responseData);
+      } else {
+        const hashParams = new Set(category);
+        const filteredData = responseData.filter((item) => {
+          if (Array.isArray(category)) {
+            return item.languages.some((language) => hashParams.has(language));
+          } else {
+            return item.languages.includes(category);
+          }
+        });
+        setData(filteredData);
+      }
+    });
+  }, [category]);
 
   return (
     <>
