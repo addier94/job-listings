@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Header } from "../components/header";
 import { JobList } from "./_components/job-list";
 import { TData } from "../utils/typescript";
+import Header from "../components/header";
 
 interface SearchPageProps {
   searchParams: {
